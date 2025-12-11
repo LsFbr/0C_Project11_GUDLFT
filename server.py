@@ -13,6 +13,14 @@ def loadCompetitions():
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
 
+def updateClubs(clubs):
+    with open('clubs.json', 'w') as c:
+        json.dump({'clubs': clubs}, c, indent=4)
+
+def updateCompetitions(competitions):
+    with open('competitions.json', 'w') as comps:
+        json.dump({'competitions': competitions}, comps, indent=4)
+
 
 app = Flask(__name__)
 app.secret_key = 'something_special'
@@ -26,7 +34,6 @@ def index():
 
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
-    clubs = loadClubs()
     club = next((club for club in clubs if club['email'] == request.form['email']), None)
 
     if club:
@@ -51,7 +58,16 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+    
+    if int(club['points']) < placesRequired:
+        flash("You don't have enough points to book this number of places")
+        return render_template('booking.html', club=club, competition=competition)
+
+    competition['numberOfPlaces'] = str(int(competition['numberOfPlaces'])-placesRequired)
+    updateCompetitions(competitions)
+    club['points'] = str(int(club['points'])-placesRequired)
+    updateClubs(clubs)
+
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)
 
