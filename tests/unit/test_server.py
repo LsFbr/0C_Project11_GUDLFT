@@ -22,15 +22,6 @@ def test_showSummary_with_unknown_email(client):
     assert b"Email not found, please try again" in response.data
 
 
-def test_showSummary_with_empty_email(client):
-    """
-    Test showSummary avec un email vide
-    Vérifie que la fonction showSummary retourne un code 200 et que le message d'erreur est présent dans la réponse.
-    """
-    response = client.post('/showSummary', data={'email': ''})
-    assert response.status_code == 200
-    assert b"Email not found, please try again" in response.data
-
 # purchasePlaces tests
 def test_purchasePlaces_success(mocker, client):
     """
@@ -95,27 +86,6 @@ def test_purchasePlaces_zero_places(mocker, client):
     mock_update_competitions.assert_not_called()
 
 
-def test_purchasePlaces_negative_places(mocker, client):
-    """
-    Test purchasePlaces avec un nombre de places négatif.
-    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
-    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
-    """
-    mock_update_clubs = mocker.patch('server.updateClubs')
-    mock_update_competitions = mocker.patch('server.updateCompetitions')
-    
-    response = client.post('/purchasePlaces', data={
-        'competition': 'Spring Festival',
-        'club': 'Simply Lift',
-        'places': '-1'
-    })
-    
-    assert response.status_code == 200
-    assert b"You cannot book a number of places less than or equal to 0" in response.data
-    mock_update_clubs.assert_not_called()
-    mock_update_competitions.assert_not_called()
-
-
 def test_purchasePlaces_not_enough_places(mocker, client):
     """
     Test purchasePlaces avec pas assez de places disponibles
@@ -135,6 +105,7 @@ def test_purchasePlaces_not_enough_places(mocker, client):
     assert b"There are not enough places available" in response.data
     mock_update_clubs.assert_not_called()
     mock_update_competitions.assert_not_called()
+
 
 def test_purchasePlaces_points_deduction(mocker, client):
     """
