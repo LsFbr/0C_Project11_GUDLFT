@@ -22,6 +22,37 @@ def test_showSummary_with_unknown_email(client):
     assert b"Email not found, please try again" in response.data
 
 
+def test_book_with_past_competition(client):
+    """
+    Test book avec une compétition passée
+    Vérifie que la fonction book retourne un code 200 et que le message d'erreur est présent dans la réponse.
+    """
+    response = client.get('/book/Christmas Cup/Simply Lift')
+    assert response.status_code == 200
+    assert b"Cannot book places for past competitions" in response.data
+
+
+def test_purchasePlaces_with_past_competition(mocker, client):
+    """
+    Test purchasePlaces avec une compétition passée
+    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
+    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
+    """
+    mock_update_clubs = mocker.patch('server.updateClubs')
+    mock_update_competitions = mocker.patch('server.updateCompetitions')
+    
+    response = client.post('/purchasePlaces', data={
+        'competition': 'Christmas Cup',
+        'club': 'Simply Lift',
+        'places': '2'
+    })
+    
+    assert response.status_code == 200
+    assert b"Cannot book places for past competitions" in response.data
+    mock_update_clubs.assert_not_called()
+    mock_update_competitions.assert_not_called()
+
+
 # purchasePlaces tests
 def test_purchasePlaces_success(mocker, client):
     """
