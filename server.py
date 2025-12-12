@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from flask import Flask,render_template,request,redirect,flash,url_for
 
 
@@ -37,7 +38,7 @@ def showSummary():
     club = next((club for club in clubs if club['email'] == request.form['email']), None)
 
     if club:
-        return render_template('welcome.html',club=club,competitions=competitions)
+        return render_template('welcome.html',club=club,competitions=competitions,datetime=datetime)
     else:
         flash("Email not found, please try again")
         return render_template('index.html')
@@ -47,10 +48,15 @@ def book(competition,club):
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
     if foundClub and foundCompetition:
+        # Vérifier que la compétition est dans le futur
+        competition_date = datetime.strptime(foundCompetition['date'], '%Y-%m-%d %H:%M:%S')
+        if competition_date.timestamp() <= datetime.now().timestamp():
+            flash("Cannot book places for past competitions")
+            return render_template('welcome.html', club=foundClub, competitions=competitions, datetime=datetime)
         return render_template('booking.html',club=foundClub,competition=foundCompetition)
     else:
         flash("Something went wrong-please try again")
-        return render_template('welcome.html', club=club, competitions=competitions)
+        return render_template('welcome.html', club=club, competitions=competitions, datetime=datetime)
 
 
 @app.route('/purchasePlaces',methods=['POST'])
@@ -58,6 +64,12 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
+
+    # Vérifier que la compétition est dans le futur
+    competition_date = datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S')
+    if competition_date.timestamp() <= datetime.now().timestamp():
+        flash("Cannot book places for past competitions")
+        return render_template('welcome.html', club=club, competitions=competitions, datetime=datetime)
 
     if placesRequired <= 0:
         flash("You cannot book a number of places less than or equal to 0")
@@ -81,7 +93,7 @@ def purchasePlaces():
     updateClubs(clubs)
 
     flash('Great-booking complete!')
-    return render_template('welcome.html', club=club, competitions=competitions)
+    return render_template('welcome.html', club=club, competitions=competitions, datetime=datetime)
 
 
 # TODO: Add route for points display
