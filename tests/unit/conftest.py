@@ -27,8 +27,9 @@ def mock_clubs():
 def mock_competitions():
     """Données de test pour les compétitions"""
     return [
-        {'name': 'Spring Festival', 'date': '2020-03-27 10:00:00', 'numberOfPlaces': '25'},
-        {'name': 'Fall Classic', 'date': '2020-10-22 13:30:00', 'numberOfPlaces': '10'}
+        {'name': 'Spring Festival', 'date': '2026-03-27 10:00:00', 'numberOfPlaces': '25'},
+        {'name': 'Fall Classic', 'date': '2026-10-22 13:30:00', 'numberOfPlaces': '10'},
+        {'name': 'Christmas Cup', 'date': '2024-12-22 13:30:00', 'numberOfPlaces': '2'}
     ]
 
 
