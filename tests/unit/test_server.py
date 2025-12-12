@@ -40,7 +40,6 @@ def test_purchasePlaces_success(mocker, client):
     """
     mock_update_clubs = mocker.patch('server.updateClubs')
     mock_update_competitions = mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     response = client.post('/purchasePlaces', data={
         'competition': 'Spring Festival',
@@ -62,7 +61,6 @@ def test_purchasePlaces_insufficient_points(mocker, client):
     """
     mock_update_clubs = mocker.patch('server.updateClubs')
     mock_update_competitions = mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     response = client.post('/purchasePlaces', data={
         'competition': 'Spring Festival',
@@ -84,7 +82,6 @@ def test_purchasePlaces_zero_places(mocker, client):
     """
     mock_update_clubs = mocker.patch('server.updateClubs')
     mock_update_competitions = mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     response = client.post('/purchasePlaces', data={
         'competition': 'Spring Festival',
@@ -106,7 +103,6 @@ def test_purchasePlaces_negative_places(mocker, client):
     """
     mock_update_clubs = mocker.patch('server.updateClubs')
     mock_update_competitions = mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     response = client.post('/purchasePlaces', data={
         'competition': 'Spring Festival',
@@ -128,7 +124,6 @@ def test_purchasePlaces_points_deduction(mocker, client):
     """
     mock_update_clubs = mocker.patch('server.updateClubs')
     mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     # Sauvegarder l'état initial depuis server.clubs (après setup_mock_data)
     club_before_deduction = next(club for club in server.clubs if club['name'] == 'She Lifts')
@@ -164,7 +159,6 @@ def test_purchasePlaces_competition_places_deduction(mocker, client):
     """
     mocker.patch('server.updateClubs')
     mock_update_competitions = mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     # Sauvegarder l'état initial depuis server.competitions (après setup_mock_data)
     comp_before_deduction = next(comp for comp in server.competitions if comp['name'] == 'Spring Festival')
@@ -199,7 +193,6 @@ def test_purchasePlaces_other_clubs_not_affected(mocker, client):
 
     mock_update_clubs = mocker.patch('server.updateClubs')
     mocker.patch('server.updateCompetitions')
-    mocker.patch('server.reload_data')  # Mock reload_data pour éviter le rechargement depuis les fichiers
     
     clubs_before = {club['name']: int(club['points']) for club in server.clubs}
     
