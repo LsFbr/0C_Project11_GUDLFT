@@ -86,6 +86,26 @@ def test_purchasePlaces_zero_places(mocker, client):
     mock_update_competitions.assert_not_called()
 
 
+def test_purchasePlaces_more_than_12_places(mocker, client):
+    """
+    Test purchasePlaces avec plus de 12 places
+    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
+    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
+    """
+    mock_update_clubs = mocker.patch('server.updateClubs')
+    mock_update_competitions = mocker.patch('server.updateCompetitions')
+    response = client.post('/purchasePlaces', data={
+        'competition': 'Spring Festival',
+        'club': 'Simply Lift',
+        'places': '13'
+    })
+    
+    assert response.status_code == 200
+    assert b"You cannot book more than 12 places at a time" in response.data
+    mock_update_clubs.assert_not_called()
+    mock_update_competitions.assert_not_called()
+
+
 def test_purchasePlaces_not_enough_places(mocker, client):
     """
     Test purchasePlaces avec pas assez de places disponibles
@@ -98,7 +118,7 @@ def test_purchasePlaces_not_enough_places(mocker, client):
     response = client.post('/purchasePlaces', data={
         'competition': 'Fall Classic',
         'club': 'Simply Lift',
-        'places': '15'
+        'places': '11'
     })
     
     assert response.status_code == 200
