@@ -92,11 +92,13 @@ def purchasePlaces():
     club['points'] = str(int(club['points'])-placesRequired)
     updateClubs(clubs)
 
-    flash('Great-booking complete!')
+    flash('Great-Booking of ' + str(placesRequired) + ' places for ' + competition['name'] + ' has been completed!')
     return render_template('welcome.html', club=club, competitions=competitions, datetime=datetime)
 
 
-# TODO: Add route for points display
+@app.route('/points_board')
+def points_board():
+    return render_template('points_board.html', clubs=clubs)
 
 
 @app.route('/logout')
