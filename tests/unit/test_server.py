@@ -21,7 +21,7 @@ def test_showSummary_with_unknown_email(client):
     assert response.status_code == 200
     assert b"Email not found, please try again" in response.data
 
-
+# book tests
 def test_book_with_past_competition(client):
     """
     Test book avec une compétition passée
@@ -30,28 +30,6 @@ def test_book_with_past_competition(client):
     response = client.get('/book/Christmas Cup/Simply Lift')
     assert response.status_code == 200
     assert b"Cannot book places for past competitions" in response.data
-
-
-def test_purchasePlaces_with_past_competition(mocker, client):
-    """
-    Test purchasePlaces avec une compétition passée
-    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
-    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
-    """
-    mock_update_clubs = mocker.patch('server.updateClubs')
-    mock_update_competitions = mocker.patch('server.updateCompetitions')
-    
-    response = client.post('/purchasePlaces', data={
-        'competition': 'Christmas Cup',
-        'club': 'Simply Lift',
-        'places': '2'
-    })
-    
-    assert response.status_code == 200
-    assert b"Cannot book places for past competitions" in response.data
-    mock_update_clubs.assert_not_called()
-    mock_update_competitions.assert_not_called()
-
 
 # purchasePlaces tests
 def test_purchasePlaces_success(mocker, client):
@@ -70,7 +48,7 @@ def test_purchasePlaces_success(mocker, client):
     })
     
     assert response.status_code == 200
-    assert b'Great-booking complete!' in response.data
+    assert b'Great-Booking of 2 places for Spring Festival has been completed!' in response.data
     mock_update_clubs.assert_called_once()
     mock_update_competitions.assert_called_once()
 
@@ -179,7 +157,7 @@ def test_purchasePlaces_points_deduction(mocker, client):
     })
     
     assert response.status_code == 200
-    assert b'Great-booking complete!' in response.data
+    assert b'Great-Booking of 3 places for Fall Classic has been completed!' in response.data
     
     # Vérification 1 : Les données passées à updateClubs() sont correctes (pour sauvegarde JSON)
     mock_update_clubs.assert_called_once()
@@ -258,3 +236,56 @@ def test_purchasePlaces_other_clubs_not_affected(mocker, client):
     #clubs non modifiés : Iron Temple et She Lifts
     assert clubs_after_dict['Iron Temple'] == clubs_before['Iron Temple']
     assert clubs_after_dict['She Lifts'] == clubs_before['She Lifts']
+
+
+def test_purchasePlaces_with_past_competition(mocker, client):
+    """
+    Test purchasePlaces avec une compétition passée
+    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
+    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
+    """
+    mock_update_clubs = mocker.patch('server.updateClubs')
+    mock_update_competitions = mocker.patch('server.updateCompetitions')
+    
+    response = client.post('/purchasePlaces', data={
+        'competition': 'Christmas Cup',
+        'club': 'Simply Lift',
+        'places': '2'
+    })
+    
+    assert response.status_code == 200
+    assert b"Cannot book places for past competitions" in response.data
+    mock_update_clubs.assert_not_called()
+    mock_update_competitions.assert_not_called()
+
+
+# points_board tests
+def test_points_board_accessible_without_authentication(client):
+    """
+    Test que la route points_board est accessible sans authentification
+    Vérifie que la fonction points_board retourne un code 200.
+    """
+    response = client.get('/points_board')
+    assert response.status_code == 200
+
+
+def test_points_board_displays_all_clubs(client):
+    """
+    Test que tous les clubs sont affichés dans le tableau
+    Vérifie que les noms de tous les clubs sont présents dans la réponse.
+    """
+    response = client.get('/points_board')
+    assert response.status_code == 200
+    for club in server.clubs:
+        assert club['name'].encode() in response.data
+
+
+def test_points_board_displays_all_points(client):
+    """
+    Test que tous les points des clubs sont affichés correctement
+    Vérifie que les points de tous les clubs sont présents dans la réponse.
+    """
+    response = client.get('/points_board')
+    assert response.status_code == 200
+    for club in server.clubs:
+        assert club['points'].encode() in response.data
