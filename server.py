@@ -14,9 +14,11 @@ def loadCompetitions():
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
 
+
 def updateClubs(clubs):
     with open('clubs.json', 'w') as c:
         json.dump({'clubs': clubs}, c, indent=4)
+
 
 def updateCompetitions(competitions):
     with open('competitions.json', 'w') as comps:
@@ -33,6 +35,7 @@ clubs = loadClubs()
 def index():
     return render_template('index.html', clubs=clubs)
 
+
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
     club = next((club for club in clubs if club['email'] == request.form['email']), None)
@@ -42,6 +45,7 @@ def showSummary():
     else:
         flash("Email not found, please try again")
         return render_template('index.html')
+
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):
