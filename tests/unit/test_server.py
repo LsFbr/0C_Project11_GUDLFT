@@ -1,4 +1,5 @@
 import server
+from bs4 import BeautifulSoup
 
 # showSummary tests
 def test_showSummary_with_valid_email(client):
@@ -20,6 +21,51 @@ def test_showSummary_with_unknown_email(client):
     response = client.post('/showSummary', data={'email': 'unknown@example.com'})
     assert response.status_code == 200
     assert b"Email not found, please try again" in response.data
+
+# welcome.html tests
+def test_book_button_present_for_future_competition(client):
+    """
+    Test que le bouton "Book Places" est présent sur welcome.html pour les compétitions dans le futur
+    Vérifie que le bouton est présent dans la réponse pour les compétitions futures.
+    """
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
+    assert response.status_code == 200
+    
+    soup = BeautifulSoup(response.data, 'html.parser')
+    
+    # Vérifier que le bouton "Book Places" est présent pour Spring Festival (futur)
+    spring_festival_li = None
+    for li in soup.find_all('li'):
+        if 'Spring Festival' in li.get_text():
+            spring_festival_li = li
+            break
+    
+    assert spring_festival_li is not None
+    book_link = spring_festival_li.find('a', string='Book Places')
+    assert book_link is not None
+
+
+def test_book_button_absent_for_past_competition(client):
+    """
+    Test que le bouton "Book Places" n'est pas présent sur welcome.html pour les compétitions passées
+    Vérifie que le bouton est absent de la réponse pour les compétitions passées.
+    """
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
+    assert response.status_code == 200
+    
+    soup = BeautifulSoup(response.data, 'html.parser')
+    
+    # Vérifier que le bouton "Book Places" n'est pas présent pour Christmas Cup (passé)
+    christmas_cup_li = None
+    for li in soup.find_all('li'):
+        if 'Christmas Cup' in li.get_text():
+            christmas_cup_li = li
+            break
+    
+    assert christmas_cup_li is not None
+    book_link = christmas_cup_li.find('a', string='Book Places')
+    assert book_link is None
+
 
 # book tests
 def test_book_with_past_competition(client):
