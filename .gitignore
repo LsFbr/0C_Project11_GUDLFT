@@ -8,3 +8,4 @@ Include/
 pyvenv.cfg
 .envrc
 __pycache__
+.coverage
