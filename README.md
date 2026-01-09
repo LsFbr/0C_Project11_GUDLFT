@@ -45,15 +45,13 @@
     * clubs.json - list of clubs with relevant information. You can look here to see what email addresses the app will accept for login.
 
 5. Testing
+    We use pytest to run the tests.
+    to run the tests globally, type <code>pytest</code>.
+    to run the unit tests, type <code>pytest tests/unit/test_server.py</code>.
+    to run the integration tests, type <code>pytest tests/integration/test_server.py</code>.
 
-    You are free to use whatever testing framework you like-the main thing is that you can show what tests you are using.
-
-    We also like to show how well we're testing, so there's a module called 
-    [coverage](https://coverage.readthedocs.io/en/coverage-5.1/) you should add to your project.
-
-6. Testing
-    To run the tests globally, type <code>pytest</code>.
-    To run the unit tests, type <code>pytest tests/unit/test_server.py</code>.
-    To run the integration tests, type <code>pytest tests/integration/test_server.py</code>.
-
+    We use coverage to measure the code coverage.
+    to run the tests with coverage, type <code>pytest --cov=.</code>.
+    to generate the coverage report, type <code>pytest --cov=. --cov-report html</code>.
+    the coverage report will be generated in the <code>reports/coverage</code> directory.
     
