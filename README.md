@@ -51,7 +51,16 @@
     to run the integration tests, type <code>pytest tests/integration/test_server.py</code>.
 
     We use coverage to measure the code coverage.
-    to run the tests with coverage, type <code>pytest --cov=.</code>.
-    to generate the coverage report, type <code>pytest --cov=. --cov-report html</code>.
+    to run the tests with coverage and generate the coverage report, type <code>pytest --cov=. --cov-report html</code>.
     the coverage report will be generated in the <code>reports/coverage</code> directory.
+
+    We use Locust for performance testing.
+    According to functional specifications:
+    - Loading time must not exceed 5 seconds
+    - Update time must not exceed 2 seconds
+    - Default number of users: 6
     
+    Before running performance tests, make sure the app is running. 
+    /!\The performance tests use the real test data (`clubs.json` and `competitions.json`). You may need to reset the data after each test run.
+    to run the performance tests and generate a report, type <code>locust -f tests/performance_tests/locustfile.py --config=tests/performance_tests/locust.conf --host=http://127.0.0.1:5000</code>.
+    the report will be generated in the <code>reports/locust</code> directory.
