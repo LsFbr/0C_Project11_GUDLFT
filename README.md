@@ -15,6 +15,11 @@
 
         Whereas Django does a lot of things for us out of the box, Flask allows us to add only what we need. 
      
+    * [pytest](https://docs.pytest.org/) - Testing framework for running unit and integration tests
+
+    * [coverage](https://coverage.readthedocs.io/) - Code coverage measurement tool
+
+    * [Locust](https://locust.io/) - Performance and load testing framework
 
     * [Virtual environment](https://virtualenv.pypa.io/en/stable/installation.html)
 
@@ -64,3 +69,23 @@
     /!\The performance tests use the real test data (`clubs.json` and `competitions.json`). You may need to reset the data after each test run.
     to run the performance tests and generate a report, type <code>locust -f tests/performance_tests/locustfile.py --config=tests/performance_tests/locust.conf --host=http://127.0.0.1:5000</code>.
     the report will be generated in the <code>reports/locust</code> directory.
+
+6. Git Branches
+
+    This project uses a branching strategy to organize bug fixes and features:
+
+    * **master** - Main branch containing the stable version of the application
+
+    * **bug/** - Branches dedicated to bug fixes:
+        * `bug/Entering_a_unknown_email_crashes_the_app` - Fix for app crash when entering unknown email
+        * `bug/Clubs_should_not_be_able_to_use_more_than_their_points_allowed` - Fix for clubs using more points than allowed
+        * `bug/Clubs_should_not_be_able_to_book_more_than_the_competition_places_available` - Fix for clubs booking more places than available
+        * `bug/Clubs_shouldn't_be_able_to_book_more_than_12_places_per_competition` - Fix for clubs booking more than 12 places per competition
+        * `bug/Booking_places_in_past_competitions` - Fix for booking places in past competitions
+        * `bug/Point_updates_are_not_reflected` - Fix for point updates not being reflected
+
+    * **feature/** - Branches dedicated to new features:
+        * `feature/Implement_points_display_board` - Implementation of points display board
+
+    * **test/** - Branches dedicated to testing:
+        * `test/performances` - Performance testing branch
