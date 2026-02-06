@@ -3,19 +3,16 @@ import pytest
 import server
 
 TEST_CLUBS = [
-    {'name': 'Simply Lift', 'email': 'john@simplylift.co', 'points': '24'},
-    {'name': 'Iron Temple', 'email': 'admin@irontemple.com', 'points': '4'},
-    {'name': 'She Lifts', 'email': 'kate@shelifts.co.uk', 'points': '12'}
+    {'name': 'Club Example 1', 'email': 'club1@example.com', 'points': '24'},
+    {'name': 'Club Example 2', 'email': 'club2@example.com', 'points': '4'},
+    {'name': 'Club Example 3', 'email': 'club3@example.com', 'points': '12'}
 ]
 
 TEST_COMPETITIONS = [
-    {'name': 'Spring Festival', 'date': '2026-03-27 10:00:00', 'numberOfPlaces': '25'},
-    {'name': 'Fall Classic', 'date': '2026-10-22 13:30:00', 'numberOfPlaces': '10'},
-    {'name': 'Christmas Cup', 'date': '2024-12-22 13:30:00', 'numberOfPlaces': '2'}
+    {'name': 'Competition Example 1', 'date': '2026-03-27 10:00:00', 'numberOfPlaces': '25'},
+    {'name': 'Competition Example 2', 'date': '2026-10-22 13:30:00', 'numberOfPlaces': '10'},
+    {'name': 'Competition Example 3', 'date': '2024-12-22 13:30:00', 'numberOfPlaces': '2'}
 ]
-
-
-# FIXTURES COMMUNES
 
 @pytest.fixture
 def client():
@@ -27,53 +24,23 @@ def client():
     with server.app.test_client() as client:
         yield client
 
-
-# FIXTURES POUR TESTS UNITAIRES
-
-@pytest.fixture(autouse=True)
-def setup_mock_data(request):
-    """
-    Fixture qui configure les données mockées avant chaque test unitaire.
-    Désactivée automatiquement pour les tests d'intégration.
-    """
-    # Vérifier si on est dans un test d'intégration
-    test_path = str(request.node.fspath)
-    if 'integration' in test_path or '\\integration\\' in test_path or '/integration/' in test_path:
-        yield
-        return
-    
-    # Sinon, utiliser les données mockées
-    server.clubs = TEST_CLUBS
-    server.competitions = TEST_COMPETITIONS
-    yield
-
-
-# FIXTURES POUR TESTS D'INTÉGRATION
-
 @pytest.fixture
 def temp_json_files(tmp_path, monkeypatch):
     """
     Fixture qui crée des fichiers JSON temporaires pour les tests d'intégration.
     Modifie les chemins des fichiers dans server.py pour utiliser les fichiers temporaires.
     """
-    # Créer les fichiers JSON temporaires avec les données initiales
     clubs_file = tmp_path / "clubs.json"
     competitions_file = tmp_path / "competitions.json"
     
-    # Données initiales pour les clubs
-    initial_clubs = {"clubs": TEST_CLUBS}
-    
-    # Données initiales pour les compétitions
+    initial_clubs = {"clubs": TEST_CLUBS}  
     initial_competitions = {"competitions": TEST_COMPETITIONS}
     
-    # Écrire les fichiers JSON temporaires
     with open(clubs_file, 'w') as f:
-        json.dump(initial_clubs, f, indent=4)
-    
+        json.dump(initial_clubs, f, indent=4) 
     with open(competitions_file, 'w') as f:
         json.dump(initial_competitions, f, indent=4)
     
-    # Modifier les fonctions pour utiliser les fichiers temporaires
     def loadClubs_temp():
         with open(clubs_file) as c:
             listOfClubs = json.load(c)['clubs']
@@ -92,13 +59,11 @@ def temp_json_files(tmp_path, monkeypatch):
         with open(competitions_file, 'w') as comps:
             json.dump({'competitions': competitions}, comps, indent=4)
     
-    # Patcher les fonctions dans server.py
     monkeypatch.setattr(server, 'loadClubs', loadClubs_temp)
     monkeypatch.setattr(server, 'loadCompetitions', loadCompetitions_temp)
     monkeypatch.setattr(server, 'updateClubs', updateClubs_temp)
     monkeypatch.setattr(server, 'updateCompetitions', updateCompetitions_temp)
     
-    # Recharger les données dans server.py
     server.clubs = loadClubs_temp()
     server.competitions = loadCompetitions_temp()
     
