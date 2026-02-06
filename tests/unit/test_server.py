@@ -145,6 +145,32 @@ def test_purchasePlaces_not_enough_places(mocker):
     mock_render.assert_called_once_with("booking.html", club=club, competition=competition)
     mock_flash.assert_called_once_with("There are not enough places available")
 
+# tests Clubs_shouldn't_be_able_to_book_more_than_12_places_per_competition
+def test_purchasePlaces_more_than_12_places(mocker):
+    """Test purchasePlaces avec plus de 12 places"""
+    initial_club_points = "24"
+    initial_competition_numberOfPlaces = "25"
+    club = {"name": "Club Example", "email": "club@example.com", "points": initial_club_points}
+    competition = {"name": "Competition Example", "date": "2999-03-27 10:00:00", "numberOfPlaces": initial_competition_numberOfPlaces}
+    places_to_book = "13"
+
+    mock_update_clubs = mocker.patch('server.updateClubs')
+    mock_update_competitions = mocker.patch('server.updateCompetitions')
+    mock_render = mocker.patch('server.render_template')
+    mock_flash = mocker.patch('server.flash')
+    mocker.patch.object(server, "clubs", [club])
+    mocker.patch.object(server, "competitions", [competition])
+
+    with server.app.test_request_context(method="POST", data={
+        "competition": competition["name"],
+        "club": club["name"],
+        "places": places_to_book
+    }):
+        server.purchasePlaces()
+
+    mock_render.assert_called_once_with("booking.html", club=club, competition=competition)
+    mock_flash.assert_called_once_with("You cannot book more than 12 places at a time")
+
 # welcome.html tests
 #def test_book_button_present_for_future_competition(client):
 #    """
@@ -199,25 +225,6 @@ def test_purchasePlaces_not_enough_places(mocker):
 #    assert b"Cannot book places for past competitions" in response.data
 
 # purchasePlaces tests
-
-#def test_purchasePlaces_more_than_12_places(mocker, client):
-#    """
-#    Test purchasePlaces avec plus de 12 places
-#    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
-#    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
-#    """
-#    mock_update_clubs = mocker.patch('server.updateClubs')
-#    mock_update_competitions = mocker.patch('server.updateCompetitions')
-#    response = client.post('/purchasePlaces', data={
-#        'competition': 'Spring Festival',
-#        'club': 'Simply Lift',
-#        'places': '13'
-#    })
-#    
-#    assert response.status_code == 200
-#    assert b"You cannot book more than 12 places at a time" in response.data
-#    mock_update_clubs.assert_not_called()
-#    mock_update_competitions.assert_not_called()
 
 #def test_purchasePlaces_points_deduction(mocker, client):
 #    """
