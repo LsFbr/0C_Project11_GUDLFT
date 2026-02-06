@@ -1,5 +1,4 @@
 import server
-from bs4 import BeautifulSoup
 
 # tests Entering_a_unknown_email_crashes_the_app
 def test_showSummary_with_valid_email(mocker):
@@ -256,33 +255,18 @@ def test_purchasePlaces_points_and_places_deduction(mocker):
     mock_update_competitions.assert_called_once_with([competition])
     print(competition["numberOfPlaces"])
 
-# points_board tests
-#def test_points_board_accessible_without_authentication(client):
-#    """
-#    Test que la route points_board est accessible sans authentification
-#    Vérifie que la fonction points_board retourne un code 200.
-#    """
-#    response = client.get('/points_board')
-#    assert response.status_code == 200
-#
-#
-#def test_points_board_displays_all_clubs(client):
-#    """
-#    Test que tous les clubs sont affichés dans le tableau
-#    Vérifie que les noms de tous les clubs sont présents dans la réponse.
-#    """
-#    response = client.get('/points_board')
-#    assert response.status_code == 200
-#    for club in server.clubs:
-#        assert club['name'].encode() in response.data
-#
-#
-#def test_points_board_displays_all_points(client):
-#    """
-#    Test que tous les points des clubs sont affichés correctement
-#    Vérifie que les points de tous les clubs sont présents dans la réponse.
-#    """
-#    response = client.get('/points_board')
-#    assert response.status_code == 200
-#    for club in server.clubs:
-#        assert club['points'].encode() in response.data
+# tests feature Implement_points_display_board
+def test_points_board_accessible_without_authentication(mocker):
+    """Test que la route points_board est accessible sans authentification"""
+    clubs = [
+        {"name": "Club Example", "email": "club@example.com", "points": "24"},
+        {"name": "Club Example 2", "email": "club2@example.com", "points": "12"},
+        {"name": "Club Example 3", "email": "club3@example.com", "points": "4"}
+    ]
+    mocker.patch.object(server, "clubs", clubs)
+    mock_render = mocker.patch('server.render_template')
+
+    with server.app.test_request_context():
+        server.points_board()
+
+    mock_render.assert_called_once_with('points_board.html', clubs=clubs)
