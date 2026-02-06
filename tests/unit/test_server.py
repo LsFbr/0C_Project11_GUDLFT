@@ -2,25 +2,44 @@ import server
 from bs4 import BeautifulSoup
 
 # showSummary tests
-def test_showSummary_with_valid_email(client):
-    """
-    Test showSummary avec un email valide existant dans clubs.json
-    Vérifie que la fonction showSummary retourne un code 200 et que le message de bienvenue et l'email sont présents dans la réponse.
-    """
-    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
-    assert response.status_code == 200
-    assert b'Welcome' in response.data
-    assert b'john@simplylift.co' in response.data
+def test_showSummary_with_valid_email(mocker):
+    """Test showSummary avec un email valide existant dans clubs."""
+    email = "club@example.com"
+    club = {"name": "Club Example", "email": "club@example.com", "points": "24"}
+    competitions = [{"name": "Competition Example", "date": "2026-03-27 10:00:00", "numberOfPlaces": "25"}]
+    
+    mock_render = mocker.patch("server.render_template")
+    mock_flash = mocker.patch("server.flash")
+    mocker.patch.object(server, "clubs", [club])
+    mocker.patch.object(server, "competitions", competitions)
+    
+    with server.app.test_request_context(method="POST", data={"email": email}):
+        server.showSummary()
+    
+    mock_render.assert_called_once_with(
+        "welcome.html",
+        club=club,
+        competitions=competitions,
+        datetime=server.datetime
+    )
+    mock_flash.assert_not_called()
 
+def test_showSummary_with_unknown_email(mocker):
+    """Test showSummary avec un email qui n'existe pas dans clubs."""
+    email = "unknown@example.com"
+    club = {"name": "Club Example", "email": "club@example.com", "points": "24"}
+    competitions = [{"name": "Competition Example", "date": "2026-03-27 10:00:00", "numberOfPlaces": "25"}]
 
-def test_showSummary_with_unknown_email(client):
-    """
-    Test showSummary avec un email qui n'existe pas dans clubs.json
-    Vérifie que la fonction showSummary retourne un code 200 et que le message d'erreur est présent dans la réponse.
-    """
-    response = client.post('/showSummary', data={'email': 'unknown@example.com'})
-    assert response.status_code == 200
-    assert b"Email not found, please try again" in response.data
+    mock_render = mocker.patch("server.render_template")
+    mock_flash = mocker.patch("server.flash")
+    mocker.patch.object(server, "clubs", [club])
+    mocker.patch.object(server, "competitions", competitions)
+    
+    with server.app.test_request_context(method="POST", data={"email": email}):
+        server.showSummary()
+    
+    mock_render.assert_called_once_with("index.html")
+    mock_flash.assert_called_once_with("Email not found, please try again")
 
 # welcome.html tests
 def test_book_button_present_for_future_competition(client):
