@@ -171,58 +171,63 @@ def test_purchasePlaces_more_than_12_places(mocker):
     mock_render.assert_called_once_with("booking.html", club=club, competition=competition)
     mock_flash.assert_called_once_with("You cannot book more than 12 places at a time")
 
-# welcome.html tests
-#def test_book_button_present_for_future_competition(client):
-#    """
-#    Test que le bouton "Book Places" est présent sur welcome.html pour les compétitions dans le futur
-#    Vérifie que le bouton est présent dans la réponse pour les compétitions futures.
-#    """
-#    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
-#    assert response.status_code == 200
-#    
-#    soup = BeautifulSoup(response.data, 'html.parser')
-#    
-#    # Vérifier que le bouton "Book Places" est présent pour Spring Festival (futur)
-#    spring_festival_li = None
-#    for li in soup.find_all('li'):
-#        if 'Spring Festival' in li.get_text():
-#            spring_festival_li = li
-#            break
-#    
-#    assert spring_festival_li is not None
-#    book_link = spring_festival_li.find('a', string='Book Places')
-#    assert book_link is not None
-#
-#def test_book_button_absent_for_past_competition(client):
-#    """
-#    Test que le bouton "Book Places" n'est pas présent sur welcome.html pour les compétitions passées
-#    Vérifie que le bouton est absent de la réponse pour les compétitions passées.
-#    """
-#    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
-#    assert response.status_code == 200
-#    
-#    soup = BeautifulSoup(response.data, 'html.parser')
-#    
-#    # Vérifier que le bouton "Book Places" n'est pas présent pour Christmas Cup (passé)
-#    christmas_cup_li = None
-#    for li in soup.find_all('li'):
-#        if 'Christmas Cup' in li.get_text():
-#            christmas_cup_li = li
-#            break
-#    
-#    assert christmas_cup_li is not None
-#    book_link = christmas_cup_li.find('a', string='Book Places')
-#    assert book_link is None
+# tests Booking_places_in_past_competitions
+def test_book_with_past_competition(mocker):
+    """Test book avec une compétition passée"""
+    club = {"name": "Club Example", "email": "club@example.com", "points": "24"}
+    competition = {"name": "Competition Example", "date": "2000-03-27 10:00:00", "numberOfPlaces": "25"}
 
-# book tests
-#def test_book_with_past_competition(client):
-#    """
-#    Test book avec une compétition passée
-#    Vérifie que la fonction book retourne un code 200 et que le message d'erreur est présent dans la réponse.
-#    """
-#    response = client.get('/book/Christmas Cup/Simply Lift')
-#    assert response.status_code == 200
-#    assert b"Cannot book places for past competitions" in response.data
+    mock_render = mocker.patch('server.render_template')
+    mock_flash = mocker.patch('server.flash')
+    mocker.patch.object(server, "clubs", [club])
+    mocker.patch.object(server, "competitions", [competition])
+
+    with server.app.test_request_context():
+        server.book(competition["name"], club["name"])
+
+    mock_render.assert_called_once_with("welcome.html", club=club, competitions=[competition], datetime=server.datetime)
+    mock_flash.assert_called_once_with("Cannot book places for past competitions")
+
+def test_book_with_future_competition(mocker):
+    """Test book avec une compétition future"""
+    club = {"name": "Club Example", "email": "club@example.com", "points": "24"}
+    competition = {"name": "Competition Example", "date": "2999-03-27 10:00:00", "numberOfPlaces": "25"}
+
+    mock_render = mocker.patch('server.render_template')
+    mock_flash = mocker.patch('server.flash')
+    mocker.patch.object(server, "clubs", [club])
+    mocker.patch.object(server, "competitions", [competition])
+
+    with server.app.test_request_context():
+        server.book(competition["name"], club["name"])
+
+    mock_render.assert_called_once_with("booking.html", club=club, competition=competition)
+    mock_flash.assert_not_called()
+
+def test_purchasePlaces_with_past_competition(mocker):
+    """Test purchasePlaces avec une compétition passée"""
+    initial_club_points = "24"
+    initial_competition_numberOfPlaces = "25"
+    club = {"name": "Club Example", "email": "club@example.com", "points": initial_club_points}
+    competition = {"name": "Competition Example", "date": "2000-03-27 10:00:00", "numberOfPlaces": initial_competition_numberOfPlaces}
+    places_to_book = "2"
+
+    mock_update_clubs = mocker.patch('server.updateClubs')
+    mock_update_competitions = mocker.patch('server.updateCompetitions')
+    mock_render = mocker.patch('server.render_template')
+    mock_flash = mocker.patch('server.flash')
+    mocker.patch.object(server, "clubs", [club])
+    mocker.patch.object(server, "competitions", [competition])
+
+    with server.app.test_request_context(method="POST", data={
+        "competition": competition["name"],
+        "club": club["name"],
+        "places": places_to_book
+    }):
+        server.purchasePlaces()
+
+    mock_render.assert_called_once_with("welcome.html", club=club, competitions=[competition], datetime=server.datetime)
+    mock_flash.assert_called_once_with("Cannot book places for past competitions")
 
 # purchasePlaces tests
 
@@ -328,26 +333,6 @@ def test_purchasePlaces_more_than_12_places(mocker):
 #    assert clubs_after_dict['She Lifts'] == clubs_before['She Lifts']
 #
 #
-#def test_purchasePlaces_with_past_competition(mocker, client):
-#    """
-#    Test purchasePlaces avec une compétition passée
-#    Vérifie que la fonction purchasePlaces retourne un code 200 et que le message d'erreur est présent dans la réponse.
-#    Vérifie que les fonctions updateClubs et updateCompetitions ne sont pas appelées.
-#    """
-#    mock_update_clubs = mocker.patch('server.updateClubs')
-#    mock_update_competitions = mocker.patch('server.updateCompetitions')
-#    
-#    response = client.post('/purchasePlaces', data={
-#        'competition': 'Christmas Cup',
-#        'club': 'Simply Lift',
-#        'places': '2'
-#    })
-#    
-#    assert response.status_code == 200
-#    assert b"Cannot book places for past competitions" in response.data
-#    mock_update_clubs.assert_not_called()
-#    mock_update_competitions.assert_not_called()
-
 
 # points_board tests
 #def test_points_board_accessible_without_authentication(client):
