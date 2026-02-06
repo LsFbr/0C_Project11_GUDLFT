@@ -17,7 +17,7 @@ def test_complete_user_booking_scenario(client, temp_json_files):
     competitions_file = temp_json_files['competitions_file']
     
     # ÉTAPE 1 : Connexion avec l'email
-    email = 'john@simplylift.co'
+    email = "club1@example.com"
     response = client.post('/showSummary', data={'email': email})
     
     assert response.status_code == 200, "La connexion doit réussir"
@@ -33,7 +33,7 @@ def test_complete_user_booking_scenario(client, temp_json_files):
     ))
     
     # Récupérer les places initiales de la compétition
-    competition_name = 'Spring Festival'
+    competition_name = "Competition Example 1"
     with open(competitions_file) as f:
         initial_competitions_data = json.load(f)
     initial_competition_places = int(next(
@@ -53,7 +53,7 @@ def test_complete_user_booking_scenario(client, temp_json_files):
     
     # ÉTAPE 3 : Réservation de 2 places pour une compétition
     places_to_book = 2
-    club_name = 'Simply Lift'
+    club_name = "Club Example 1"
     
     # Accéder à la page de réservation
     response = client.get(f'/book/{competition_name}/{club_name}')
@@ -92,7 +92,6 @@ def test_complete_user_booking_scenario(client, temp_json_files):
         f"Les places doivent être déduites : {initial_competition_places} - {places_to_book} = {places_after_booking}"
     
     # ÉTAPE 4 : Déconnexion (simulée en rechargeant les données depuis les fichiers)
-    # Dans une vraie application, cela simulerait une nouvelle session
     server.clubs = server.loadClubs()
     server.competitions = server.loadCompetitions()
     
@@ -112,7 +111,6 @@ def test_complete_user_booking_scenario(client, temp_json_files):
     soup = BeautifulSoup(response.data, 'html.parser')
     
     # Vérifier que les points affichés correspondent aux points déduits
-    # Les points doivent être affichés quelque part dans la page
     points_displayed = str(points_after_booking).encode()
     assert points_displayed in response.data, \
         f"Les points déduits ({points_after_booking}) doivent être affichés après reconnexion"
@@ -146,12 +144,23 @@ def test_complete_user_booking_scenario(client, temp_json_files):
         "Les points en mémoire doivent correspondre aux fichiers"
     assert int(competition_final_memory['numberOfPlaces']) == final_places, \
         "Les places en mémoire doivent correspondre aux fichiers"
-    
-    print(f"\n✓ Scénario complet validé :")
-    print(f"  - Points initiaux : {initial_points}")
-    print(f"  - Points après réservation : {points_after_booking}")
-    print(f"  - Points après reconnexion : {final_points}")
-    print(f"  - Places initiales : {initial_competition_places}")
-    print(f"  - Places après réservation : {places_after_booking}")
-    print(f"  - Places après reconnexion : {final_places}")
 
+
+def test_points_board_accessible_without_authentication(client):
+    """
+    Test que la route points_board est accessible sans authentification
+    Vérifie que la fonction points_board retourne un code 200.
+    """
+    response = client.get('/points_board')
+    assert response.status_code == 200
+
+
+def test_points_board_displays_all_clubs_and_points(client, temp_json_files):
+    """
+    Test que tous les clubs et leurs points sont affichés dans le tableau.
+    """
+    response = client.get('/points_board')
+    assert response.status_code == 200
+    for club in server.clubs:
+        assert club['name'].encode() in response.data
+        assert club['points'].encode() in response.data
